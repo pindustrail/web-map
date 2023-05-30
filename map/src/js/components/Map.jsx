@@ -59,6 +59,8 @@ function Map(props) {
     if (!map.current || !styleLoaded) return
     // add legend control with checkbox, and it will be shown as default
     map.current.addControl(new MapboxLegendControl(legendTargets, { showDefault: true }), 'bottom-right');
+    map.current.addControl(new maplibregl.NavigationControl(), 'bottom-right');
+
   }
 
   function addTerrainSource() {
@@ -73,7 +75,7 @@ function Map(props) {
     });
   };
 
-  function addTrail(){
+  function addTrail() {
     if (!map.current || !styleLoaded) return
     map.current.addSource('pindustrail', {
       type: "vector",
@@ -81,55 +83,81 @@ function Map(props) {
       attribution: '<a href="https://terrapindus.gr">Terra Pindus</a>'
     });
 
-    map.current.addLayer({
-    "id": "trail",
-    "type": "line",
-    "source": "pindustrail",
-    "source-layer": "PATH",
-    "paint": {
-      "line-color": "orange",
-      "line-width": 3
-    }
-  });
 
-  map.current.addLayer(
-    {
-      "id": "stops",
-      "type": "circle",
+    map.current.addLayer({
+      "id": "trail-outline",
+      "type": "line",
+      "source": "pindustrail",
+      "source-layer": "PATH",
+      "paint": {
+        "line-color": "black",
+        "line-width": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          6, 5,
+          10, 6,
+          12, 8
+        ]
+      }
+    });
+
+    map.current.addLayer({
+      "id": "trail",
+      "type": "line",
+      "source": "pindustrail",
+      "source-layer": "PATH",
+      "paint": {
+        "line-color": "orange",
+        "line-width": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          6, 3,
+          10, 4,
+          12, 6
+        ]
+      }
+    });
+
+    map.current.addLayer(
+      {
+        "id": "stops",
+        "type": "circle",
+        "source": "pindustrail",
+        "source-layer": "STOPS",
+        "paint": {
+          "circle-radius": 6,
+          "circle-stroke-width": 2,
+          "circle-opacity": 0.8,
+          "circle-stroke-color": "white",
+          "circle-color": "#081424"
+        },
+      }
+    )
+
+    map.current.addLayer({
+      "id": "stops-labels",
+      "type": "symbol",
       "source": "pindustrail",
       "source-layer": "STOPS",
-      "paint": {
-        "circle-radius": 6,
-        "circle-stroke-width": 2,
-        "circle-opacity": 0.8,
-        "circle-stroke-color": "white",
-        "circle-color": "#081424"
+      "minzoom": 10,
+      "layout": {
+        "text-field": "{Name}",
+        "text-font": [
+          "NotoSans-Bold"
+        ],
+        "text-variable-anchor": [
+          "bottom-left"
+        ],
+        "text-radial-offset": 0.2,
       },
-    }
-  )
-
-  map.current.addLayer({
-    "id": "stops-labels",
-    "type": "symbol",
-    "source": "pindustrail",
-    "source-layer": "STOPS",
-    "minzoom": 10,
-    "layout": {
-      "text-field": "{Name}",
-      "text-font": [
-        "NotoSans-Bold"
-      ],
-      "text-variable-anchor": [
-        "bottom-left"
-      ],
-      "text-radial-offset": 0.2,
-    },
-    "paint": {
-      "text-color": "#d97b52",
-      "text-halo-color": "white",
-      "text-halo-width": 1
-    }
-  })
+      "paint": {
+        "text-color": "#d97b52",
+        "text-halo-color": "white",
+        "text-halo-width": 1
+      }
+    })
   }
 
   function handleMapClick(e) {
@@ -204,6 +232,7 @@ function Map(props) {
         exaggeration: 1,
       })
     );
+    
     window.map = map.current
 
 
